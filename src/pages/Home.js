@@ -21,7 +21,7 @@ export default function Home() {
   const todos = useSelector((state) => state.todos.todos);
   const location = useLocation();
   const navigate = useNavigate();
-  const [datas, setDatas] = useState();
+  const [datas, setDatas] = useState([]);
 
   const firebaseConfig = {
     apiKey: "AIzaSyAHWEvliIWSQZAo3xR_QwO4PT_upgPMRpE",
@@ -41,21 +41,19 @@ export default function Home() {
       const docs = snapshots.docs.map((doc) => {
         const data = doc.data();
         data.id = doc.id;
+        console.log(data)
         return data;
       });
+      // const enaf = myArray.map((data) => {
+      //   return data.id + "," + data.title + "," + data.createdby;
+      // });
       setDatas(docs);
-      console.log(docs);
     })();
-
-    // getAllTodos();
-    // console.log(user.uid)
-    // getTodosByUser(user.uid)
-    // getAllTodos()
-
-    // Object.keys(todos).forEach(function (key, data) {
-    //   console.log(todos[key]);
-    // });
   }, []);
+
+  // datas.map((data) => {
+  //   console.log(data);
+  // });
 
   if (!user) {
     return (
@@ -108,20 +106,21 @@ export default function Home() {
             </TableRow>
           </TableHead>
           <TableBody>
-
-            <TableRow
-              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">
-                {"data[1]"}
-              </TableCell>
-              <TableCell align="right">{"data"}</TableCell>
-              <TableCell align="right">{"data"}</TableCell>
-              <TableCell align="right">
-                <DeleteForever />
-                {}
-              </TableCell>
-            </TableRow>
+            {datas.map((data) => {
+              <TableRow
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {"fewf"}
+                </TableCell>
+                <TableCell align="right">{"data"}</TableCell>
+                <TableCell align="right">{} </TableCell>
+                <TableCell align="right">
+                  <DeleteForever />
+                  {}
+                </TableCell>
+              </TableRow>;
+            })}
           </TableBody>
         </Table>
       </TableContainer>
