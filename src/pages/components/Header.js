@@ -11,7 +11,7 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../firebase";
+import { logout } from "../../firebase.js";
 
 function Header() {
   const navigate = useNavigate();

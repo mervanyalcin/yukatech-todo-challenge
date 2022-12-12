@@ -9,56 +9,33 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useSelector } from "react-redux";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Box } from "@mui/system";
-import { deneme, getAllTodos, getTodosByUser } from "../firebase.js";
-import { DeleteForever } from "@mui/icons-material";
-import { collection, getDocs, getFirestore } from "firebase/firestore";
-import { initializeApp } from "firebase/app";
+import { getAllTodos } from "../firebase.js";
+import TodosList from "./components/TodosList.js";
 
 export default function Home() {
   const user = useSelector((state) => state.auth.user);
   const todos = useSelector((state) => state.todos.todos);
-  const location = useLocation();
   const navigate = useNavigate();
-  const [datas, setDatas] = useState([]);
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAHWEvliIWSQZAo3xR_QwO4PT_upgPMRpE",
-    authDomain: "yukatech-todo-challenge.firebaseapp.com",
-    projectId: "yukatech-todo-challenge",
-    storageBucket: "yukatech-todo-challenge.appspot.com",
-    messagingSenderId: "299265507659",
-    appId: "1:299265507659:web:0dac62378ae7e49b4528ce",
-  };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const [alltodos, setAlltodos] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      const colRef = collection(db, "todos");
-      const snapshots = await getDocs(colRef);
-      const docs = snapshots.docs.map((doc) => {
-        const data = doc.data();
-        data.id = doc.id;
-        console.log(data)
-        return data;
+    getAllTodos();
+    if (user?.status !== "admin") {
+      const filterByUser = todos.filter((key) => {
+        return key.uid === user.uid && key.todostatus !== "Deleted";
       });
-      // const enaf = myArray.map((data) => {
-      //   return data.id + "," + data.title + "," + data.createdby;
-      // });
-      setDatas(docs);
-    })();
+      setAlltodos(filterByUser);
+    } else {
+      setAlltodos(todos);
+    }
   }, []);
+  
 
-  // datas.map((data) => {
-  //   console.log(data);
-  // });
-
-  if (!user) {
-    return (
-      <Navigate to={location.state?.return_url || "/login"} replace={true} />
-    );
+  
+  if (user === null) {
+    return <Navigate to="/login" />;
   }
 
   return (
@@ -106,20 +83,16 @@ export default function Home() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {datas.map((data) => {
-              <TableRow
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {"fewf"}
-                </TableCell>
-                <TableCell align="right">{"data"}</TableCell>
-                <TableCell align="right">{} </TableCell>
-                <TableCell align="right">
-                  <DeleteForever />
-                  {}
-                </TableCell>
-              </TableRow>;
+            {alltodos.map((data) => {
+              return (
+                <TodosList
+                  key={data.id}
+                  id={data.id}
+                  title={data.title}
+                  createdby={data.createdby}
+                  todostatus={data.todostatus}
+                />
+              );
             })}
           </TableBody>
         </Table>
@@ -127,3 +100,5 @@ export default function Home() {
     </div>
   );
 }
+
+// return <TodosList key={data.id} id={data.id} title={data.title} createdby={data.createdby} name={data.todostatus} />

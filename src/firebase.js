@@ -12,10 +12,11 @@ import {
   getDocs,
   getFirestore,
   onSnapshot,
+  orderBy,
+  query,
+  runTransaction,
   setDoc,
-  where,
 } from "firebase/firestore";
-import { setAllTodos } from "./store/todos";
 import { todosHandle, userHandle } from "./utils";
 
 // Your web app's Firebase configuration
@@ -44,18 +45,19 @@ onAuthStateChanged(auth, async (user) => {
     };
 
     onSnapshot(doc(db, "todos", user.uid), (doc) => {
-      todosHandle(doc.data())
+      todosHandle(doc.data());
     });
-
+    getAllTodos();
 
     userHandle(data);
   } else {
-    userHandle(false);
+    userHandle(null);
   }
 });
 
 export const login = async (email, password) => {
   try {
+    getAllTodos();
     return await signInWithEmailAndPassword(auth, email, password);
   } catch (err) {
     console.log(err.code);
@@ -64,61 +66,120 @@ export const login = async (email, password) => {
 export const logout = async () => {
   try {
     await signOut(auth);
-    userHandle(false);
+    userHandle(null);
   } catch (err) {
     console.log(err.code);
   }
 };
 
-export const newTodo = async (title, todostatus, user) => {
+export const newTodo = async (
+  title,
+  description,
+  todostatus,
+  user,
+  createdTime
+) => {
   try {
-    let naber = Math.floor(Math.random() * 9999); 
-    const response = await setDoc(doc(db, "todos", user.uid), {
+    let todosID = Math.floor(Math.random() * 99999);
+    await setDoc(doc(db, "todos", todosID.toString()), {
       title: title,
+      description: description,
       todostatus: todostatus,
       uid: user.uid,
       createdby: user.name,
+      createdTime: createdTime,
     });
-    return response;
+    getAllTodos();
   } catch (err) {
     console.log(err.code);
   }
 };
 
-export async function getAllTodos() {
-  const colRef = collection(db, "todos");
-  const snapshots = await getDocs(colRef);
-  const docs = snapshots.docs.filter((doc) => {
-    const data = doc.data();
-    data.id = doc.id;
-    return data;
-  });
-  console.log(snapshots)
-  todosHandle(docs);
-}
+export const editTodo = async (
+  id,
+  title,
+  description,
+  todostatus,
+  user,
+  createdTime
+) => {
+  try {
+    await setDoc(doc(db, "todos", id), {
+      title: title,
+      description: description,
+      todostatus: todostatus,
+      uid: user.uid,
+      createdby: user.name,
+      createdTime: createdTime,
+    });
+    getAllTodos();
+  } catch (err) {
+    console.log(err.code);
+  }
+};
 
+export const getCurrentData = async (id) => {
+  try {
+    const docSnap = await getDoc(doc(db, "todos", id));
+    return docSnap.data();
+  } catch (error) {
+    console.log(error.code);
+  }
+};
 
-export async function deneme() {
-  const docRef = collection(db, "todos");
-  const docSnap = await getDocs(docRef);
-  const docs = docSnap.docs.map(doc => {
-    const data = doc.data()
-    data.id = doc.id
+export const deleteTodo = async (id) => {
+  try {
+    await runTransaction(db, async (transaction) => {
+      transaction.update(doc(db, "todos", id.toString()), {
+        todostatus: "Deleted",
+      });
+    });
+    getAllTodos();
+  } catch (err) {
+    console.log(err.code);
+  }
+};
 
-    return data
-  })
+export const completeTodo = async (id) => {
+  try {
+    await runTransaction(db, async (transaction) => {
+      transaction.update(doc(db, "todos", id.toString()), {
+        todostatus: "Completed",
+      });
+    });
+    getAllTodos();
+  } catch (err) {
+    console.log(err.code);
+  }
+};
 
-  todosHandle(docs)  
-  return docs
-}
+export const removeFromDeleted = async (id) => {
+  try {
+    await runTransaction(db, async (transaction) => {
+      transaction.update(doc(db, "todos", id.toString()), {
+        todostatus: "Pending",
+      });
+    });
+    getAllTodos();
+  } catch (err) {
+    console.log(err.code);
+  }
+};
 
-export const getTodosByUser = async () => {
-  const colRef = collection(db, "todos",  where("todostatus", "==", "Pending"));
-  const snapshots = await getDocs(colRef);
-  const docs = snapshots.docs.map((doc) => {
-    const data = doc.data();
-    data.id = doc.id;
-    return data;
-  });
-  todosHandle(docs);
+export const getAllTodos = async () => {
+  try {
+    const colRef = query(
+      collection(db, "todos"),
+      orderBy("createdTime", "desc")
+    );
+    const snapshots = await getDocs(colRef);
+    const docs = snapshots.docs.map((doc) => {
+      const data = doc.data();
+      data.id = doc.id;
+      return data;
+    });
+    todosHandle(docs);
+  } catch (error) {
+    console.log(error.code);
+  }
 };

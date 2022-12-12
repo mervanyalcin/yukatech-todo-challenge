@@ -5,7 +5,7 @@ import todos from "./todos";
 const store = configureStore({
   reducer: {
     auth,
-    todos
+    todos,
   },
 });
 

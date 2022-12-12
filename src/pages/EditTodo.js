@@ -1,14 +1,32 @@
 import { Button, Divider, TextField, Typography } from "@mui/material";
 import { useFormik } from "formik";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { newTodo } from "../firebase.js";
+import { useNavigate, useParams } from "react-router-dom";
+import { editTodo, getCurrentData } from "../firebase.js";
 import { NewTodoSchema } from "../validation/newtodo-schema";
 
-export default function Todo() {
+export default function EditTodo() {
   const user = useSelector((state) => state.auth.user);
-  const navigate = useNavigate()
+  const [currentTodo, setcurrentTodo] = useState([]);
+  const [titlee, setTitle] = useState();
+  const [descc, setDesc] = useState();
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  useEffect(() => {
+    getCurrentData(id)
+      .then((editTodoCurrent) => { 
+        setDesc(editTodoCurrent.description)
+        setTitle(editTodoCurrent.title)
+        setcurrentTodo(editTodoCurrent);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  // Todo 1 From admin
 
   const d = new Date();
   const createdTime =
@@ -18,20 +36,22 @@ export default function Todo() {
 
   const formik = useFormik({
     initialValues: {
-      title: "",
+      title: titlee,
+      description: descc,
       todostatus: "Pending",
-      description: "",
     },
     validationSchema: NewTodoSchema,
     onSubmit: async (values, actions) => {
-      await newTodo(
+      await editTodo(
+        id,
         values.title,
         values.description,
         values.todostatus,
         user,
         createdTime
       );
-      navigate("/")
+
+      navigate("/");
     },
   });
 
@@ -43,7 +63,7 @@ export default function Todo() {
           marginBottom: "1.2rem",
         }}
       >
-        Add New To Do
+        Edit Todo
       </Typography>
       <Divider
         variant="middle"
@@ -55,11 +75,12 @@ export default function Todo() {
           sx={{ mt: "20px" }}
           id="outlined-adornment-title"
           type="text"
-          label="Title"
           name="title"
           fullWidth
-          value={formik.values.title}
-          onChange={formik.handleChange}
+          value={titlee}
+          onChange={(e) => {
+            setTitle(e.target.value);
+          }}
           error={formik.touched.title && Boolean(formik.errors.title)}
           helperText={formik.touched.title && formik.errors.title}
         />
@@ -70,11 +91,12 @@ export default function Todo() {
           id="outlined-adornment-description"
           type="text"
           rows={4}
-          label="Description"
           name="description"
           fullWidth
-          value={formik.values.description}
-          onChange={formik.handleChange}
+          value={descc}
+          onChange={(e) => {
+            setDesc(e.target.value);
+          }}
           error={
             formik.touched.description && Boolean(formik.errors.description)
           }
@@ -94,14 +116,13 @@ export default function Todo() {
           error={formik.touched.todostatus && Boolean(formik.errors.todostatus)}
           helperText={formik.touched.todostatus && formik.errors.todostatus}
         />
-
         <Button
           type="submit"
           variant="contained"
           fullWidth
           sx={{ fontWeight: 700, pt: 1.4, pb: 1.6, mt: "20px" }}
         >
-          ADD
+          Updated
         </Button>
       </form>
     </div>

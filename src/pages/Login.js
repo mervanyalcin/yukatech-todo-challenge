@@ -20,9 +20,9 @@ export default function Login() {
     },
   });
 
-  if (user) {
-    return <Navigate to={location.state?.return_url || "/"} replace={true} />;
-  }
+  if (user !== null) {
+    return <Navigate to={"/"} replace={true} />;
+  } 
 
   
 

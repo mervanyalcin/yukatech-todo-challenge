@@ -8,5 +8,5 @@ export const userHandle = (data) => {
 
 
 export const todosHandle = (data) => {
-  store.dispatch(setAllTodos(data)); 
+  store.dispatch(setAllTodos(data));  
 };
