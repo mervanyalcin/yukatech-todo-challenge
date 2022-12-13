@@ -1,28 +1,19 @@
 import { Delete, Done, Edit, SettingsBackupRestore } from "@mui/icons-material";
 import { Button, TableCell, TableRow } from "@mui/material";
 import { useSelector } from "react-redux";
-import { Navigate, useNavigate } from "react-router-dom";
-import { completeTodo, deleteTodo, removeFromDeleted } from "../../firebase.js";
+import { useNavigate } from "react-router-dom";
+import { changeTodoStatus } from "../../../firebase.js";
 
 export default function TodosList({ id, title, todostatus, createdby }) {
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
 
-  function deleteTodoHandle() {
-    deleteTodo(id);
-  }
-
   function editTodoHandle() {
-    navigate(`/edit/${id}`)
-    
+    navigate(`/edit/${id}`);
   }
 
-  function completeTodoHandle() {
-    completeTodo(id);
-  }
-
-  function removeFromDeletedHandle() {
-    removeFromDeleted(id);
+  function completeTodoHandle(id, todoStatus) {
+    changeTodoStatus(id, todoStatus);
   }
 
   return (
@@ -44,17 +35,38 @@ export default function TodosList({ id, title, todostatus, createdby }) {
       <TableCell align="right">{createdby}</TableCell>
       <TableCell align="right">{todostatus} </TableCell>
       <TableCell align="right">
-        <Button onClick={deleteTodoHandle} sx={{ color: "inherit" }}>
-          <Delete />
-        </Button>
+        {todostatus !== "Deleted" && (
+          <Button
+            onClick={() => {
+              completeTodoHandle(id, "Deleted");
+            }}
+            sx={{ color: "inherit" }}
+          >
+            <Delete />
+          </Button>
+        )}
+        {todostatus !== "Completed" && (
+          <Button
+            onClick={() => {
+              completeTodoHandle(id, "Completed");
+            }}
+            sx={{ color: "inherit" }}
+          >
+            <Done />
+          </Button>
+        )}
+
         <Button onClick={editTodoHandle} sx={{ color: "inherit" }}>
           <Edit />
         </Button>
-        <Button onClick={completeTodoHandle} sx={{ color: "inherit" }}>
-          <Done />
-        </Button>
+
         {user.status === "admin" && todostatus.toString() !== "Pending" && (
-          <Button onClick={removeFromDeletedHandle} sx={{ color: "inherit" }}>
+          <Button
+            onClick={() => {
+              completeTodoHandle(id, "Pending");
+            }}
+            sx={{ color: "inherit" }}
+          >
             <SettingsBackupRestore />
           </Button>
         )}

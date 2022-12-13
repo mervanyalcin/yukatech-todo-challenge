@@ -1,8 +1,8 @@
-import Home from "./pages/Home";
-import MainLayout from "./pages/MainLayout";
-import Login from "./pages/Login";
-import Todo from "./pages/NewTodo";
-import EditTodo from "./pages/EditTodo";
+import Home from "./pages/todo/Home";
+import MainLayout from "./pages/todo/MainLayout";
+import Login from "./pages/login/Login";
+import Todo from "./pages/todo/NewTodo";
+import EditTodo from "./pages/todo/EditTodo";
 
 export const routes = [
   {

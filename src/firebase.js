@@ -11,12 +11,12 @@ import {
   getDoc,
   getDocs,
   getFirestore,
-  onSnapshot,
   orderBy,
   query,
   runTransaction,
   setDoc,
 } from "firebase/firestore";
+import { setStateNumber } from "./store/useeffectrender";
 import { todosHandle, userHandle } from "./utils";
 
 // Your web app's Firebase configuration
@@ -43,11 +43,6 @@ onAuthStateChanged(auth, async (user) => {
       emailVerified: user.emailVerified,
       ...dbUser.data(),
     };
-
-    onSnapshot(doc(db, "todos", user.uid), (doc) => {
-      todosHandle(doc.data());
-    });
-    getAllTodos();
 
     userHandle(data);
   } else {
@@ -112,7 +107,6 @@ export const editTodo = async (
       createdby: user.name,
       createdTime: createdTime,
     });
-    getAllTodos();
   } catch (err) {
     console.log(err.code);
   }
@@ -127,37 +121,11 @@ export const getCurrentData = async (id) => {
   }
 };
 
-export const deleteTodo = async (id) => {
+export const changeTodoStatus = async (id, status) => {
   try {
     await runTransaction(db, async (transaction) => {
       transaction.update(doc(db, "todos", id.toString()), {
-        todostatus: "Deleted",
-      });
-    });
-    getAllTodos();
-  } catch (err) {
-    console.log(err.code);
-  }
-};
-
-export const completeTodo = async (id) => {
-  try {
-    await runTransaction(db, async (transaction) => {
-      transaction.update(doc(db, "todos", id.toString()), {
-        todostatus: "Completed",
-      });
-    });
-    getAllTodos();
-  } catch (err) {
-    console.log(err.code);
-  }
-};
-
-export const removeFromDeleted = async (id) => {
-  try {
-    await runTransaction(db, async (transaction) => {
-      transaction.update(doc(db, "todos", id.toString()), {
-        todostatus: "Pending",
+        todostatus: status,
       });
     });
     getAllTodos();
@@ -178,6 +146,7 @@ export const getAllTodos = async () => {
       data.id = doc.id;
       return data;
     });
+    setStateNumber(3);
     todosHandle(docs);
   } catch (error) {
     console.log(error.code);

@@ -11,8 +11,8 @@ import Paper from "@mui/material/Paper";
 import { useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Box } from "@mui/system";
-import { getAllTodos } from "../firebase.js";
-import TodosList from "./components/TodosList.js";
+import { getAllTodos } from "../../firebase.js";
+import TodosList from "../todo/components/TodosList";
 
 export default function Home() {
   const user = useSelector((state) => state.auth.user);
@@ -24,16 +24,14 @@ export default function Home() {
     getAllTodos();
     if (user?.status !== "admin") {
       const filterByUser = todos.filter((key) => {
-        return key.uid === user.uid && key.todostatus !== "Deleted";
+        return key.uid === user?.uid && key.todostatus !== "Deleted";
       });
       setAlltodos(filterByUser);
     } else {
       setAlltodos(todos);
     }
-  }, []);
-  
+  }, [user?.status, todos, user?.uid]);
 
-  
   if (user === null) {
     return <Navigate to="/login" />;
   }

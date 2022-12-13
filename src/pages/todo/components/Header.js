@@ -11,7 +11,7 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../firebase.js";
+import { logout } from "../../../firebase.js";
 
 function Header() {
   const navigate = useNavigate();
@@ -24,6 +24,11 @@ function Header() {
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
+  };
+
+  const logoutHandle = () => {
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -97,7 +102,7 @@ function Header() {
               <MenuItem
                 key={"logout"}
                 onClick={() => {
-                  logout();
+                  logoutHandle();
                 }}
               >
                 <Typography textAlign="center">Logout</Typography>
